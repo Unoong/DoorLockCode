@@ -17,3 +17,11 @@ sudo service udev restart
 # Hardware
 
 The Jumper from the programmer to the MSP430 labled RST needs to be connected during programming, then removed after programming. The system also needs to be power cycled after programming. 
+
+# Adding/Removing cards
+
+Cards are added and removed from this list:
+
+https://github.com/Technocopia/DoorLockCode/blob/master/DoorLockCode.ino#L6 
+
+And after the list is updated, the door must be reprogrammed. 
