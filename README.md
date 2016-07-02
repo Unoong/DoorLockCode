@@ -14,3 +14,6 @@ sudo cp 71-ti-permissions.rules /etc/udev/rules.d/
 sudo udevadm control --reload-rules
 sudo service udev restart
 ```
+# Hardware
+
+The Jumper from the programmer to the MSP430 labled RST needs to be connected during programming, then removed after programming. The system also needs to be power cycled after programming. 
