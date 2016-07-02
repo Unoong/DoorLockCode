@@ -10,5 +10,5 @@ The arduino sketch to control the RFID door lock
 * Set the Board to Launchpad w/ msp430g2553 (16 mhz)  
 * Copy the rules file for the programmer
 ```
-sudo mv /71-ti-permissions.rules /etc/udev/rules.d/
+sudo cp 71-ti-permissions.rules /etc/udev/rules.d/
 ```
