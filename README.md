@@ -11,4 +11,6 @@ The arduino sketch to control the RFID door lock
 * Copy the rules file for the programmer
 ```
 sudo cp 71-ti-permissions.rules /etc/udev/rules.d/
+sudo udevadm control --reload-rules
+sudo service udev restart
 ```
