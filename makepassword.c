@@ -13,19 +13,19 @@ void makepassword() {
 
 	key = (int)time;
 	password = key ^ //input;
-	fprintf(pw, "%d", password);
+	fprintf(pw, "%d %d",key,password);
 	fclose(pw);
 	return;
 }
 
-int matchpassword(char *input,int key) {
-	char password_origin[10];
-	char temp[10];
+int matchpassword(int input) {
+	int password_origin = 0;
+	int key = 0;
 	FILE* pw = NULL;
 	pw = fopen(".shadow", "r");
-	fscanf(pw, "%s", password_origin);
+	fscanf(pw, "%d %d",&key,&password_origin);
 	fclose(pw);
-	if (strcmp(password_origin , key ^ input) == 0) {
+	if (password_origin == key ^ input) {
 		return 1;
 	}
 	else {
