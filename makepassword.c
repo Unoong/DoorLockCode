@@ -3,7 +3,8 @@
 #include <string.h>
 
 void makepassword() {
-	int password;
+	int password = 0;
+	int input = 0;
 	FILE* pw = NULL;
 	clock_t time_cpu = clock();
 	pw = fopen(".shadow", "w");
@@ -12,7 +13,7 @@ void makepassword() {
 	//받은 후 정수형태로 변경
 
 	key = (int)time_cpu;
-	password = key ^ //input;
+	password = key ^ input;
 	fprintf(pw, "%d %d",key,password);
 	fclose(pw);
 	return;
