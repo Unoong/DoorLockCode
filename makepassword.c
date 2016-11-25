@@ -5,13 +5,13 @@
 void makepassword() {
 	int password;
 	FILE* pw = NULL;
-	clock_t time;
+	clock_t time_cpu = clock();
 	pw = fopen(".shadow", "w");
 
 	//비밀번호를 입력받는 부분 인자 input
-	//10글자 이내로 입력받아서 저장
+	//받은 후 정수형태로 변경
 
-	key = (int)time;
+	key = (int)time_cpu;
 	password = key ^ //input;
 	fprintf(pw, "%d %d",key,password);
 	fclose(pw);
