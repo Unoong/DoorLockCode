@@ -7,7 +7,7 @@ char* secretCode = "5678";  // 비밀번호 설정
 int position = 0; 
 int wrong = 0;   //틀리 회수
 int ft=10,lt=20;  // 제한할 시간
-char key = "teaminit";
+int key_security = 1234567;
 int password_origin = 0;
 // 비밀번호 비교시 쓸 변수 선언(맞는 경우와 틀린경우 2가지)
 
@@ -50,7 +50,7 @@ void setup2(){
 
 
 void loop(){
-  int insert = matchpassword(password_origin,key);
+  int insert = matchpassword(password_origin,&key_security);
 //  char key = keypad.getKey(); // 키패드에서 입력된 값을 가져옵니다.
 
   if(hour()>=ft && hour()<lt) {      //현재 시간이 제한된 시간안에 속하면 
@@ -113,28 +113,29 @@ void blink(){ // 비밀번호 4번 오류시 Red LED를 깜빡여 주는 함수.
   }
 }
 
-int makepassword(int *password,char key) 
+int makepassword(int *password,int *key)  //비밀번호를 입력받는 함수
 {
-  int i;
-  char input[8];
-  for(i=0;i<8;i++) {
+  int i;                                  //자리수를 표현하는 변수
+  char input[7];                          //입력받은 문자열
+  for(i=0;i<7;i++) {                      //for문으로 7자리의 input문자열을 채운다.
    input[i] = keypad.getKey(); 
   }
-  password = atoi(input) ^ atoi(key);
+  password = atoi(input) ^ key;     //xor연산을 통해서 비밀번호를 만들어낸다.
   return 1;
  }
 
-int matchpassword(int password, char key) {
-  char input[8];
-  int i;
-  for(i=0;i<8;i++) {
+int matchpassword(int *password, int *key)  //비밀번호를 확인하는 함수
+{
+  char input[8];                           //비밀번호를 입력받는 변수
+  int i;                            
+  for(i=0;i<8;i++) {                       //비밀번호를 입력받는다.
    input[i] = keypad.getKey(); 
   }
-  if(password == atoi(input)^atoi(key)) {
+  if(password == atoi(input)^key) { //해당 input값이 비밀번호와 같은지 검사한다.
     return 1;
   }
   else {
-    return 0;
+    return 0;                             //비밀번호가 맞으면 1 , 틀리면 0 을 리턴한다.
   }
 }
 
