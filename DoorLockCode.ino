@@ -1,5 +1,11 @@
+#include<Time.h>
+#include<TimeLib.h>  //시간을 사용하기위한 헤더
+#include<Keypad.h>  //Keypad 를 사용하기 위한 헤더
+
+
 #define W0 3        //입력 단자 설정
 #define W1 4
+#define W2 2
 #define DoorP 5
 #define DoorE 6
 
@@ -36,18 +42,23 @@ static unsigned long int cards[]=
   7142241,
   7142252
                 };  // 변수를 static 으로 정의하여 유효범위를 넘어가지 않아도 소멸하지 않도록 함 
-char bits[80];
+char bits[80]={0};
 int bitcnt=0;         // bitcnt 초기화
 unsigned long long bitw=0;  // unsigned long long ==> 8byte(64bit) 범위
 unsigned int timeout=1000;  
 boolean valid = true;  //boolean 으로 True/False 판정 doorlock 
+
+char temp;
+int password=0;           // 초기 비밀번호
+int password_input=0;     // 입력될 비밀번호가 저장 될 공간.
+int key_security = 141312; //대칭키에 사용되는 키
 
 void setup()  // 보드의 단자에 대하서 input output 정의 및 시리얼 모니터 사용 결정
 {
   // put your setup code here, to run once:
   Serial.begin(9600);   //시리얼 통신 시작 9600 bit/s
    
-  pinMode(W0, INPUT_PULLUP); 
+  pinMode(W0, INPUT_PULLUP);       //단자 설정
   pinMode(W1, INPUT_PULLUP); 
   pinMode(DoorP,OUTPUT);
   pinMode(DoorE,OUTPUT);
@@ -57,12 +68,13 @@ void setup()  // 보드의 단자에 대하서 input output 정의 및 시리얼
   // '1'과 '0'을 나타내는 2개의 wire를 통해 1과 0 bit를 읽는 pulse를 출력한다.
   // pulse를 세는 것이 필요하다.
 
+  makepassword(); //초기비밀번호 설정
+
   attachInterrupt((W0), W0ISR, FALLING);  //   W0 단자 (여기서는 3번) 에서 입력값이 High 에서 Low 로 바뀔때  인터럽트(W0ISR) 발생시킴
                                           // 문법: attachInterrut(unit8_t pin, void(*function)(void), int mode)
   attachInterrupt((W1), W1ISR, FALLING);  //  마찬가지로 W1 단자에서 인터럽트 발생.
-  Serial.println("Hello World!");       
-  
-  for(int i=0; i<sizeof(bits); i++) bits[i]=0;
+  attachInterrupt((W2), W2ISR, RISING);
+        
 }
 
 
@@ -83,8 +95,8 @@ void loop()
 
 
     
-
-    boolean ep,op;      
+ 
+    boolean ep,op;           //패리티 비트 선언으로써 boolean 자료형은 1과 0의 참,거짓 값만을 가질 수 있다.
      unsigned int      site;
     unsigned long int card; //4byte 범위
     
@@ -121,12 +133,37 @@ void loop()
     }
  
    done:
-   bitcnt=0;
+   bitcnt=0;         //비트카운트, 비트값, 입력된 암호 등을 초기화 시킨다.
    bitw = 0;
+   password_input = 0;
    valid = true;
   }
 
 }
+
+const byte rows = 4;
+const byte cols = 4;
+// 키패드의 행, 열의 갯수
+
+char keys[rows][cols] = {
+  {'1', '2', '3', 'A'},
+  {'4', '5', '6', 'B'},
+  {'7', '8', '9', 'C'},
+  {'*', '0', '#', 'D'}
+};
+// 키패드 버튼 위치 설정
+
+byte rowPins[rows] = {8, 7, 6, 5};
+byte colPins[cols] = {4, 3, 2, 1};
+// 키패드에 연결된 핀번호 설정(데이터 시트 참고)
+
+Keypad keypad = Keypad(makeKeymap(keys), rowPins, colPins, rows, cols);
+// 키패드 오브젝트 생성
+
+int redPin = 13;
+int greenPin = 12;
+// LED 2개의 핀번호 설정
+
 
 void W0ISR(){  // W0단자에 인터럽트가 들어왔을 경우.
   bitw = (bitw<<1) | 0x0; // bitw 를 왼쪽으로 1 bit shift 시키고 0과 OR 연산 수행 --> bitw값 LSB에 0을 추가시킨다.
@@ -141,8 +178,104 @@ void W1ISR(){   // W1단자에 인터럽트가 들어왔을 경우
   timeout = 2000;          //timeout을 초기화 시킨다.
 }
 
+void W2ISR() {
+  matchpassword(); // 입력된 패스워드를 매칭시키는 함수를 실행한다.
+  goto done2;     
+  
+  done2:
+   bitcnt=0;                    //비트 카운트, 비트, 암호 입력값 등을 초기화
+   bitw = 0;
+   password_input = 0;
+   valid = true;
+}
 
-//parity bit 정의, 데이터가 잘 전송이 됬는지 알아보는 역할을 함  ;; it 연산은 8bit 단위로 수행됨 연산을 하면 밀려나가는 부분은 모두 0 처리
+void makepassword() {       //패스워드를 만드는 함수
+  
+  while(1) {
+  temp = keypad.getKey();    숫자 하나를 입력.
+  if(temp == '1') {
+      password = password*10+1;       // 비트 shift의 원리를 이용해서 int 자료형에 암호값을 입력 받는다.
+    }                                 // ( 원래 암호에 곱하기 10을 한 후 입력 값을 1의 자리로 설정 )
+    if(temp == '2') {
+      password = password*10+2;
+    }
+    if(temp == '3') {
+      password = password*10+3;
+    }
+    if(temp == '4') {
+      password = password*10+4;
+    }
+    if(temp == '5') {
+      password = password*10+5;
+    }
+    if(temp == '6') {
+     password = password*10+6;
+    }
+    if(temp == '7') {
+      password = password*10+7;
+    }
+    if(temp == '8') {
+      password = password*10+8;
+    }
+    if(temp == '9') {
+      password = password*10+9;
+    }
+    if(temp == '0') {
+      password = password*10+0;
+    }
+    if(temp == '*' || temp == '#') {            // '*' 또는 '#'이 입력 될 때 까지.
+      password = password ^ key_security;
+      break;
+    }
+  }
+}
+void matchpassword()
+{
+  while(1) {
+    temp = keypad.getKey();                        // 키패드를 통해 비밀번호를 1자리씩 temp에 입력받는다.
+    if(temp == '1') {                              // temp 값을 1자리씩 password_input에 삽입한다.
+      password_input = password_input*10+1;  
+    }
+    if(temp == '2') {
+      password_input = password_input*10+2;
+    }
+    if(temp == '3') {
+      password_input = password_input*10+3;
+    }
+    if(temp == '4') {
+      password_input = password_input*10+4;
+    }
+    if(temp == '5') {
+      password_input = password_input*10+5;
+    }
+    if(temp == '6') {
+     password_input = password_input*10+6;
+    }
+    if(temp == '7') {
+      password_input = password_input*10+7;
+    }
+    if(temp == '8') {
+      password_input = password_input*10+8;
+    }
+    if(temp == '9') {
+      password_input = password_input*10+9;
+    }
+    if(temp == '0') {
+      password_input = password_input*10+0;
+    }
+    if(temp == '*' || temp == '#') {             // * 또는 #이 입력 된다면 입력을 멈춤
+      break;
+    }
+    if(password_input == (password ^ key_security)) {   // 저장된 암호를 대칭키를 통해 원래의 암호로 바꾼 후 비교
+      digitalWrite(DoorP, HIGH);            // DoorLock 이 열린다.
+      delay(3000);
+    }
+  }
+  
+}
+
+
+//parity bit 정의, 데이터가 잘 전송이 됬는지 알아보는 역할을 함, it 연산은 8bit 단위로 수행됨 연산을 하면 밀려나가는 부분은 모두 0 처리
 int parity(unsigned long int x) {    // 검사할 비트 값을 1,2,4,8,16 비트씩 오른쪽으로 쉬프트 시키며 그 한 단계 전 비트와 XOR 연산을 수행한다.
     unsigned long int y;
    y = x ^ (x >> 1);  // ^ : bit XOR  
