@@ -3,11 +3,11 @@
 #include<Keypad.h>
 
 
-#define W0 3        //입력 단자 설정
-#define W1 4
-#define W2 2
-#define DoorP 5
-#define DoorE 6
+#define W0 2        //입력 단자 설정  ,  아두이노 메가 인터럽트 가능한 단자 2,3,21,22,23
+#define W1 3
+#define W2 21
+#define DoorP 5     // 카드로 여는 Door-lock
+#define DoorE 6      // 키패드로 여는 Door-lock
 
 /* 기본적인 코드 원리 
  *  Wiegand 프로토콜을 구현하기 위한 rfid 리더기와 자기선 리더기에 사용되는 코드이다.
