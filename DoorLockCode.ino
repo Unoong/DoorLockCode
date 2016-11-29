@@ -1,14 +1,3 @@
-<<<<<<< HEAD
-<<<<<<< HEAD
-#include <Keypad.h>
-#define W0 3
-=======
-#define W0 3        //입력 단자 설정
->>>>>>> master
-#define W1 4
-#define DoorP 5
-#define DoorE 6
-=======
 #include<Time.h>
 #include<TimeLib.h>
 #include<Keypad.h>
@@ -19,31 +8,7 @@
 #define W2 21
 #define DoorP 5     // 카드로 여는 Door-lock
 #define DoorE 6      // 키패드로 여는 Door-lock
->>>>>>> fe03cf62358545f0708440c04c203c2962d5c7c3
 
-<<<<<<< HEAD
-const byte rows = 4;
-const byte cols = 4;
-// 키패드의 행, 열의 갯수
-
-char keys[rows][cols] = {
-  {'1', '2', '3', 'A'},
-  {'4', '5', '6', 'B'},
-  {'7', '8', '9', 'C'},
-  {'*', '0', '#', 'D'}
-};
-// 키패드 버튼 위치 설정
-
-byte rowPins[rows] = {8, 7, 6, 5};
-byte colPins[cols] = {4, 3, 2, 1};
-// 키패드에 연결된 핀번호 설정(데이터 시트 참고)
-
-Keypad keypad = Keypad(makeKeymap(keys), rowPins, colPins, rows, cols);
-// 키패드 오브젝트 생성
-
-// 가능한 비밀번호 풀
-/*static unsigned long int cards[]=
-=======
 /* 기본적인 코드 원리 
  *  Wiegand 프로토콜을 구현하기 위한 rfid 리더기와 자기선 리더기에 사용되는 코드이다.
  *  wiegand format이란 출입통제 시스템에 주로 사용되는 접근식 RF카드리더에 대부분 적용되는 인터페이스를 말한다.
@@ -53,7 +18,6 @@ Keypad keypad = Keypad(makeKeymap(keys), rowPins, colPins, rows, cols);
 
 // 저장되어 있는 고유 card 정보들.  (card number)
 static unsigned long int cards[]=
->>>>>>> master
 {7142197,7142204,7142180,7142175,7142159,7142198,7142160,7142242,7142199,7142179,7142250,7142186,7142251,7142178,7142163,7142161,7142162,4652198,7142173,7142202,7142174,7142210,7142201,7142203,7142211,7142158,7142157,7142164,7142165,7142209,7142208,7142207,7142206,7142205,7142156,7142200,7142249,7142248,7142243,7142244,7142245,7142246,
   7142177,
   7142221,
@@ -77,58 +41,12 @@ static unsigned long int cards[]=
   7142240,
   7142241,
   7142252
-<<<<<<< HEAD
-                };  // 변수를 static 으로 정의하여 유효범위를 넘어가지 않아도 소멸하지 않도록 함 */
-
-unsigned long int password = 0; //비밀번호 초기화
-unsigned long int key_security = 8282;
-char bits[80];
-=======
                 };  // 변수를 static 으로 정의하여 유효범위를 넘어가지 않아도 소멸하지 않도록 함 
 char bits[80]={0};
->>>>>>> fe03cf62358545f0708440c04c203c2962d5c7c3
 int bitcnt=0;         // bitcnt 초기화
 unsigned long long bitw=0;  // unsigned long long ==> 8byte(64bit) 범위
 unsigned int timeout=1000;  
 boolean valid = true;  //boolean 으로 True/False 판정 doorlock 
-char temp;
-int i;
-
-void makepassword() {
-  while(1) {
-    temp = keypad.getKey();
-    if(temp >= '0' && temp <= '9') {
-      password = 10 * password + temp;
-    }
-    else {
-      password = password | key_security;
-      break;
-    }
-  }
-}
-
-void W0ISR(){
-  bitw = (bitw<<1) | 0x0; // bitw 를 왼쪽으로 1 bit shift 된 값과 OR 연산 수행 
-  bitcnt++;               // bit count 증가시킴
-  timeout = 2000;          
-}
-
-void W1ISR(){
-  bitw = (bitw<<1) | 0x1;
-  bitcnt++;
-  timeout = 2000;
-}
-
-//parity bit 정의, 데이터가 잘 전송이 됬는지 알아보는 역할을 함  ;; bit 연산은 8bit 단위로 수행됨 연산을 하면 밀려나가는 부분은 모두 0 처리
-int parity(unsigned long int x) {
-    unsigned long int y;
-   y = x ^ (x >> 1);  // ^ : bit XOR  
-   y = y ^ (y >> 2);    
-   y = y ^ (y >> 4);
-   y = y ^ (y >> 8);
-   y = y ^ (y >>16);
-   return y & 1;    // & : bit AND
-}
 
 char temp;
 int password=0;
@@ -140,20 +58,13 @@ void setup()  // 보드의 단자에 대하서 input output 정의 및 시리얼
   // put your setup code here, to run once:
   Serial.begin(9600);   //시리얼 통신 시작 9600 bit/s
    
-  //pinMode(W0, INPUT_PULLUP); 
-  //pinMode(W1, INPUT_PULLUP); 
+  pinMode(W0, INPUT_PULLUP); 
+  pinMode(W1, INPUT_PULLUP); 
   pinMode(DoorP,OUTPUT);
   pinMode(DoorE,OUTPUT);
   digitalWrite(DoorP, LOW); 
   digitalWrite(DoorE, LOW); 
-
-  makepassword();
   
-<<<<<<< HEAD
-  //attachInterrupt((W0), W0ISR, FALLING);  //   W0 단자 (여기서는 3번) 에서 입력값이 High 에서 Low 로 바뀔때  인터럽트(W0ISR) 발생시킴
-                                          // 문법: attachInterrut(unit8_t pin, void(*function)(void), int mode)
-  //attachInterrupt((W1), W1ISR, FALLING);
-=======
   // '1'과 '0'을 나타내는 2개의 wire를 통해 1과 0 bit를 읽는 pulse를 출력한다.
   // pulse를 세는 것이 필요하다.
 
@@ -162,91 +73,33 @@ void setup()  // 보드의 단자에 대하서 input output 정의 및 시리얼
   attachInterrupt((W0), W0ISR, FALLING);  //   W0 단자 (여기서는 3번) 에서 입력값이 High 에서 Low 로 바뀔때  인터럽트(W0ISR) 발생시킴
                                           // 문법: attachInterrut(unit8_t pin, void(*function)(void), int mode)
   attachInterrupt((W1), W1ISR, FALLING);  //  마찬가지로 W1 단자에서 인터럽트 발생.
-<<<<<<< HEAD
-  Serial.println("Hello World!");       
->>>>>>> master
-  
-  //for(int i=0; i<sizeof(bits); i++) bits[i]=0;
-=======
   attachInterrupt((W2), W2ISR, RISING);
         
->>>>>>> fe03cf62358545f0708440c04c203c2962d5c7c3
 }
 
 
 void loop()
 {
   digitalWrite(DoorP, LOW);
-  digitalWrite(DoorE, LOW); // 잠김
-  //if (timeout>0) timeout--;         // timeout 이 0이 될때 까지  잠깐 시간을 둔다., 적어도 한번의 인터럽트가 발생해야 비밀번호 확인과정을 거치게 되어있음  
-  //if (timeout == 0 && bitcnt != 0){
+  digitalWrite(DoorE, LOW);
+  if (timeout>0) timeout--;         // timeout 이 0이 될때 까지  잠깐 시간을 둔다., 적어도 한번의 인터럽트가 발생해야 비밀번호 확인과정을 거치게 되어있음  
+  if (timeout == 0 && bitcnt != 0){
     //Serial.print((long unsigned int)(bitw>>32),BIN);
     //Serial.print((long unsigned int)bitw,BIN);
       //  bitw = 0x122D9F628;=>36bit
-  //  for(int i=bitcnt; i!=0; i--) Serial.print((unsigned int)(bitw>>(i-1) & 0x00000001)); // 오른쪽 shift , 특정 비트 클리어 ,,, 인터럽트가 발생한 숫자만큼 비트를 하나씩 내리면서 1 이 있는 bitw 를 확인
-  //  Serial.print(" (");
-  //  Serial.print(bitcnt);  //bitcnt 값을 serial 통신에 출력 
-  //  Serial.println(")");
-  
-  while(1) {
-    temp = keypad.getKey();
-    if(temp == '1') {
-      bitw = bitw*10+1;
-      bitcnt++;
-    }
-    if(temp == '2') {
-      bitw = bitw*10+2;
-      bitcnt++;
-    }
-    if(temp == '3') {
-      bitw = bitw*10+3;
-      bitcnt++;
-    }
-    if(temp == '4') {
-      bitw = bitw*10+4;
-      bitcnt++;
-    }
-    if(temp == '5') {
-      bitw = bitw*10+5;
-      bitcnt++;
-    }
-    if(temp == '6') {
-      bitw = bitw*10+6;
-      bitcnt++;
-    }
-    if(temp == '7') {
-      bitw = bitw*10+7;
-      bitcnt++;
-    }
-    if(temp == '8') {
-      bitw = bitw*10+8;
-      bitcnt++;
-    }
-    if(temp == '9') {
-      bitw = bitw*10+9;
-      bitcnt++;
-    }
-    if(temp == '0') {
-      bitw = bitw*10+0;
-      bitcnt++;
-    }
-    if(temp == '*' || temp == '#' || 10*bitw+9 > 4294967295) {
-      break;
-    }
-  }
-  
+    for(int i=bitcnt; i!=0; i--) Serial.print((unsigned int)(bitw>>(i-1) & 0x00000001)); // 오른쪽 shift , 특정 비트 클리어 ,,, 인터럽트가 발생한 숫자만큼 비트를 하나씩 내리면서 1 이 있는 bitw 를 확인
+    Serial.print(" (");
+    Serial.print(bitcnt);  //bitcnt 값을 serial 통신에 출력 
+    Serial.println(")");
+
+
+
+    
+
     boolean ep,op;      
-    unsigned int      site;
+     unsigned int      site;
     unsigned long int card; //4byte 범위
     
-<<<<<<< HEAD
-    site = (bitw>>25) & 0x7f;   // 25bit 오른쪽으로 옮겨 01111111 과 비트연산 => 왜 하는지 모르겠음
-    card = (bitw>>1)  & 0xffffff;   //111111111111111111111111
-    op = (bitw>>0)  & 0x1;    // xxxx xxxx xxxx & 0001
-    ep = (bitw>>32) & 0x1;    // ep = 0 False
-    if (parity(site) != ep) valid=false;      //
-    if (parity(card) == op) valid=false;      //
-=======
     site = (bitw>>25) & 0x7f;   // bitw의 앞 7비트 (site) 값을 추출 하는 과정. ( bitw를 오른쪽으로 25bit 쉬프트 시킨 후 01111111과 AND 연산을 수행)
     card = (bitw>>1)  & 0xffffff;   //bitw의 site 비트 뒤의 24비트 (card) 값을 추출 하는 과정. ( bitw를 오른쪽으로 1bit 쉬프트 시킨후 0xffffff와 AND 연산을 수행)
     op = (bitw>>0)  & 0x1;    // bitw의 odd parity bit 를 추출 하는 과정
@@ -256,29 +109,23 @@ void loop()
     //패리티 검사
     if (parity(site) != ep) valid=false;      // site 값의 패리티 검사에서 오류가 생기면 ( 짝수 패리티 검사) vaild 에 false를 넣는다.
     if (parity(card) == op) valid=false;      // card 값의 패리티 검사에서 오류가 생기면 ( 홀수 패리티 검사) vaild 에 false를 넣는다.
->>>>>>> master
     Serial.print("Site: "); Serial.println(site);   //doorlock site 값 출력
     Serial.print("Card: "); Serial.println(card);  // doorlock card 값 출력
     Serial.print("ep: "); Serial.print(parity(site));Serial.println(ep);  // doorlock ep 값 출력
     Serial.print("op: "); Serial.print(parity(card));Serial.println(op);  // doorlock op 값 출력
     Serial.print("Parity Check: ");Serial.println(valid?"Valid":"Error");
     if (valid){
-<<<<<<< HEAD
-      //if (site==17)  // 10001(2)
-        //for (int i=0; i<sizeof(cards); i++)
-          if ((password | key_security) == card){
-            Serial.println("Match!");
-            digitalWrite(DoorP, HIGH);
-=======
       if (site==17)  // 10001(2)
         for (int i=0; i<sizeof(cards); i++)
           if (cards[i] == card){                  // 비밀번호 풀 과 card 값을 비교한다.
             Serial.println("Match!");            // 같다면 Match 출력하고
             digitalWrite(DoorP, HIGH);            // DoorLock 이 열린다.
->>>>>>> master
             delay(3000);
             goto done;
           }   //만약 비밀번호가 그 안에 있다면 DoorP 에 해당하는 단자에 전류가 흘러 열림, 3초 딜레이 후 다시 수행..
+    
+
+
 
    Serial.println("Error!");
    digitalWrite(DoorE, HIGH);
@@ -290,16 +137,10 @@ void loop()
    bitw = 0;
    password_input = 0;
    valid = true;
-  //}
+  }
 
 }
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-
-  
-=======
-=======
 const byte rows = 4;
 const byte cols = 4;
 // 키패드의 행, 열의 갯수
@@ -324,7 +165,6 @@ int greenPin = 12;
 // LED 2개의 핀번호 설정
 
 
->>>>>>> fe03cf62358545f0708440c04c203c2962d5c7c3
 void W0ISR(){  // W0단자에 인터럽트가 들어왔을 경우.
   bitw = (bitw<<1) | 0x0; // bitw 를 왼쪽으로 1 bit shift 시키고 0과 OR 연산 수행 --> bitw값 LSB에 0을 추가시킨다.
   bitcnt++;               // bit count 증가시킴
@@ -444,4 +284,3 @@ int parity(unsigned long int x) {    // 검사할 비트 값을 1,2,4,8,16 비�
    y = y ^ (y >>16);
    return y & 1;    // & : bit AND
 }  
->>>>>>> master
