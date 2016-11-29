@@ -1,5 +1,6 @@
 #define W0 3        //입력 단자 설정
 #define W1 4
+#define W2 5
 #define DoorP 5
 #define DoorE 6
 
@@ -42,6 +43,10 @@ unsigned long long bitw=0;  // unsigned long long ==> 8byte(64bit) 범위
 unsigned int timeout=1000;  
 boolean valid = true;  //boolean 으로 True/False 판정 doorlock 
 
+char temp;
+int password;
+int password_input;
+
 void setup()  // 보드의 단자에 대하서 input output 정의 및 시리얼 모니터 사용 결정
 {
   // put your setup code here, to run once:
@@ -60,6 +65,7 @@ void setup()  // 보드의 단자에 대하서 input output 정의 및 시리얼
   attachInterrupt((W0), W0ISR, FALLING);  //   W0 단자 (여기서는 3번) 에서 입력값이 High 에서 Low 로 바뀔때  인터럽트(W0ISR) 발생시킴
                                           // 문법: attachInterrut(unit8_t pin, void(*function)(void), int mode)
   attachInterrupt((W1), W1ISR, FALLING);  //  마찬가지로 W1 단자에서 인터럽트 발생.
+  attachInterrupt((W2), W2ISR, RISING);
   Serial.println("Hello World!");       
   
   for(int i=0; i<sizeof(bits); i++) bits[i]=0;
@@ -123,6 +129,7 @@ void loop()
    done:
    bitcnt=0;
    bitw = 0;
+   password_input = 0;
    valid = true;
   }
 
@@ -139,6 +146,54 @@ void W1ISR(){   // W1단자에 인터럽트가 들어왔을 경우
   bitw = (bitw<<1) | 0x1;  // bitw 를 왼쪽으로 1 bit shift 시키고 1과 XOR 연산 수행 -->bitw값 LSB에 1을 추가시킨다.
   bitcnt++;                //bit count 값 증가
   timeout = 2000;          //timeout을 초기화 시킨다.
+}
+
+void W2ISR() {
+  matchpassword();
+  goto done;
+}
+
+void matchpassword() {
+  while(1) {
+    temp = keypad.getKey();
+    if(temp == '1') {
+      password_input = password_input*10+1;  
+    }
+    if(temp == '2') {
+      password_input = password_input*10+2;
+    }
+    if(temp == '3') {
+      password_input = password_input*10+3;
+    }
+    if(temp == '4') {
+      password_input = password_input*10+4;
+    }
+    if(temp == '5') {
+      password_input = password_input*10+5;
+    }
+    if(temp == '6') {
+     password_input = password_input*10+6;
+    }
+    if(temp == '7') {
+      password_input = password_input*10+7;
+    }
+    if(temp == '8') {
+      password_input = password_input*10+8;
+    }
+    if(temp == '9') {
+      password_input = password_input*10+9;
+    }
+    if(temp == '0') {
+      password_input = password_input*10+0;
+    }
+    if(temp == '*' || temp == '#') {
+      break;
+    }
+    if(password == password_input) {
+      digitalWrite(DoorP, HIGH);            // DoorLock 이 열린다.
+      delay(3000);
+      goto done;
+    }
 }
 
 
